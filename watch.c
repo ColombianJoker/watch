@@ -7,6 +7,7 @@
 // Default values as constants
 #define DEFAULT_SLEEP_INTERVAL 2
 #define DEFAULT_DATE_FORMAT "%H:%M:%S "
+#define DEFAULT_EVERY_MESSAGE " Every "
 #define DEFAULT_OPEN_SEP "[ "
 #define DEFAULT_CLOSE_SEP " ]"
 
@@ -14,7 +15,8 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Syntax: %s <command>\n", argv[0]);
         fprintf(stderr, "Environment variables:\n");
-        fprintf(stderr, "  WATCH_SLEEP       -- Number of seconds to wait between command and command execution. (Default: %d)\n", DEFAULT_SLEEP_INTERVAL);
+        fprintf(stderr, "  WATCH_SLEEP       -- Number of seconds to wait between command and command execution.\n");
+        fprintf(stderr, "                       (Default: %d)\n", DEFAULT_SLEEP_INTERVAL);
         fprintf(stderr, "  WATCH_DATEFORMAT  -- strftime() valid date and time format string. (Default: \"%s\")\n", DEFAULT_DATE_FORMAT);
         fprintf(stderr, "  WATCH_OPEN_SEP    -- String delimiter to delimit command (open). (Default: \"%s\")\n", DEFAULT_OPEN_SEP);
         fprintf(stderr, "  WATCH_CLOSE_SEP   -- String delimiter to delimit command (close). (Default: \"%s\")\n", DEFAULT_CLOSE_SEP);
@@ -54,6 +56,13 @@ int main(int argc, char *argv[]) {
         date_format = watch_dateformat_env;
     }
     
+    // Get "every" message from WATCH_EVERY_MESSAGE environment variable
+    const char *every_message = DEFAULT_EVERY_MESSAGE; // Default "every message"
+    char *watch_every_message_env = getenv("WATCH_EVERY_MESSAGE");
+    if (watch_every_message_env != NULL) {
+      every_message = watch_every_message_env;
+    }
+    
     // Get command open marker separator from WATCH_OPEN_SEP
     const char *open_sep = DEFAULT_OPEN_SEP;
     char *watch_open_sep_env = getenv("WATCH_OPEN_SEP");
@@ -82,7 +91,7 @@ int main(int argc, char *argv[]) {
         strftime(time_buffer, sizeof(time_buffer), date_format, info);
 
         // Display header with date, time, interval, and command
-        printf("%s--- Every %d s: %s%s%s\n", time_buffer, sleep_interval, open_sep, command, close_sep);
+        printf("%s%s%ds: %s%s%s\n", time_buffer, every_message, sleep_interval, open_sep, command, close_sep);
         fflush(stdout);
 
         // Execute the command
